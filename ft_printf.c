@@ -6,38 +6,31 @@
 /*   By: rcorlett <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/29 11:28:00 by rcorlett          #+#    #+#             */
-/*   Updated: 2024/10/29 12:46:15 by rcorlett         ###   ########.fr       */
+/*   Updated: 2024/11/04 11:40:53 by rcorlett         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ft_printf.h"
 
-int	handle_conversion(char specifier, va_list args)
+int	print_arg(va_list args, char type)
 {
-	int		count;
-	char	c;
-
-	count = 0;
-	if (specifier == 'c')
-	{
-		c = (char)va_arg(args, int);
-		count += write(1, &c, 1);
-	}
-	else if (specifier == 's')
-		count += print_string(va_arg(args, char *));
-	else if (specifier == 'd' || specifier == 'i')
-		count += print_number(va_arg(args, int));
-	else if (specifier == 'u')
-		count += print_unsigned(va_arg(args, unsigned int));
-	else if (specifier == 'x')
-		count += print_hex(va_arg(args, unsigned int), 0);
-	else if (specifier == 'X')
-		count += print_hex(va_arg(args, unsigned int), 1);
-	else if (specifier == 'p')
-		count += print_pointer(va_arg(args, void *));
-	else if (specifier == '%')
-		count += write(1, "%", 1);
-	return (count);
+	if (type == 'c')
+		return (print_char(va_arg(args, int)));
+	if (type == 's')
+		return (print_str(va_arg(args, char *)));
+	if (type == 'd' || type == 'i')
+		return (print_nbr(va_arg(args, int)));
+	if (type == 'u')
+		return (print_unsigned(va_arg(args, unsigned int)));
+	if (type == 'x')
+		return (print_hex(va_arg(args, unsigned int), 1));
+	if (type == 'X')
+		return (print_hex(va_arg(args, unsigned int), 0));
+	if (type == 'p')
+		return (print_pointer(va_arg(args, unsigned long)));
+	if (type == '%')
+		return (print_char('%'));
+	return (0);
 }
 
 int	ft_printf(const char *argument, ...)
@@ -46,18 +39,15 @@ int	ft_printf(const char *argument, ...)
 	int		count;
 	int		i;
 
+	va_start(args, argument);
 	count = 0;
 	i = 0;
-	va_start(args, argument);
 	while (argument[i])
 	{
 		if (argument[i] == '%' && argument[i + 1])
-		{
-			count += handle_conversion(argument[i + 1], args);
-			i++;
-		}
+			count += print_arg(args, argument[++i]);
 		else
-			count += write(1, &argument[i], 1);
+			count += print_char(argument[i]);
 		i++;
 	}
 	va_end(args);
